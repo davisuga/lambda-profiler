@@ -28,7 +28,7 @@ import System.Process.Internals
     ProcessHandle__ (ClosedHandle, OpenHandle),
     withProcessHandle,
   )
-
+import Data.Tuple
 -- | returns Just pid or Nothing if process has already exited
 getPid ph = withProcessHandle ph go
   where
@@ -47,21 +47,77 @@ spawnShell command =
 onlyStdout :: (a1, Maybe a2, c, d) -> a2
 onlyStdout (_, Just stdout, _, _) = stdout
 
-getCommand :: Show a => Maybe a -> [Char]
+getCommand :: Show a => Maybe a -> String
 getCommand Nothing = ""
-getCommand (Just pid) = "ps ax -o pid,rss  | grep " ++ (show pid) ++ "|awk -F\" \" '{print $2}'   | tee ps"
+getCommand (Just pid) = "ps ax -o pid,rss  | grep " ++ show pid ++ "|awk -F\" \" '{print $2}'   | tee ps"
 
--- flushShell :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> String -> IO String
--- flushShell (Just std_in, Just std_out, _, _) cmd = do
---   hPutStr std_in cmd
---   hFlush std_in
---   hGetLine std_out
 
--- spawnThenRead s = do
---   shellInfo <- spawnShell s
---   flushShell shellInfo s
-(|>) f g = g . f
+castTupleToArgs function args = function `uncurry` args
+a |> b =
+  case a of
+    a -> b a
+    _ -> b a
+a /> b = b `uncurry` a
 
+data Table = Table
+  { cbo :: String,
+    employees :: [String]
+  }
+data HomeToWorkDistance = HomeToWorkDistance
+data ParamsSession = ParamsSession
+data Coords = Coords
+data CBODescription = CBODescription
+data Branch = Branch
+
+addHomeToWorkDistance [Branch] Coords  = HomeToWorkDistance
+addCoordinates ParamsSession CBODescription = Coords
+-- (|>) :: a -> (a -> b) -> b
+addCBODescription :: [String] -> String -> CBODescription
+addCBODescription _ _ = CBODescription
+
+-- Sends an email
+(📩) message title receiver = do
+  print $ "Sending email to" ++ receiver ++ " with title " ++ title ++ " and message " ++ message
+
+-- Let it ✨ shine ✨
+(✨) content = "✨ " ++ content ++ " ✨"
+
+test = do
+  let table = Table {employees = ["John", "Peter"], cbo = "some-random-code"}
+  let paramsSession = ParamsSession
+  let branches = [Branch]
+
+  let resultMeh = addHomeToWorkDistance  branches (addCoordinates  paramsSession (addCBODescription (employees table) $ cbo table))
+  let tableCBO = cbo table
+  let tableEmployees = employees table
+
+  let resultNicest =
+          (tableEmployees, tableCBO)
+            /> addCBODescription
+            |> addCoordinates paramsSession
+            |> addHomeToWorkDistance branches
+
+  let solutionA =
+          addCBODescription (employees table) (cbo table)
+            |> addCoordinates paramsSession
+            |> addHomeToWorkDistance branches
+
+  [[1,2],[2,3],[3,4]]
+        |> flatten
+        |> map (* 2)
+        |> map (+ 5)
+        |> sum
+
+  -- let resultMeh =
+  --       addHomeToWorkDistance
+  --         ( addCoordinates
+  --             (addCBODescription (employees table) $ cbo table)
+  --             paramsSession
+  --         )
+  --         branches
+
+flatten :: [[a]] -> [a]
+flatten = foldl (++) []
 main = do
   args <- getArgs
   let command = unwords args
@@ -75,7 +131,7 @@ main = do
       pid >>= print
 
       mainLoop stdin stdout pid
-    _ -> do error "Unable to start process"
+    _ -> error "Unable to start process"
 
 appendEndFile :: FilePath -> String -> IO String
 appendEndFile file content = do

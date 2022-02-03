@@ -1,0 +1,20 @@
+#!/bin/bash
+echo "tick"
+sleep 1
+echo "tock"
+sleep 1
+echo "tick"
+sleep 1
+echo "tock"
+sleep 1
+echo "tock"
+sleep 1
+echo "tick"
+sleep 1
+echo "tock"
+sleep 1
+echo "tock"
+sleep 1
+echo "tick"
+sleep 1
+echo "tock"
